@@ -1,9 +1,9 @@
-# SE Labs (Python) — Personal GenAI Track
+# GenAI Evals Starter (Python)
 
-[![CI](https://github.com/RoastedHawk/se-labs-python/actions/workflows/ci.yml/badge.svg)](https://github.com/RoastedHawk/se-labs-python/actions/workflows/ci.yml)
+[![CI](https://github.com/RoastedHawk/genai-evals-starter/actions/workflows/ci.yml/badge.svg)](https://github.com/RoastedHawk/genai-evals-starter/actions/workflows/ci.yml)
 ![coverage](docs/coverage.svg)
 
-A clean personal workspace for building software engineering skills focused on GenAI skills and evaluation.
+Starter kit for building and demonstrating GenAI evaluation workflows in Python.
 
 ## Why This Repo
 - Demonstrates practical GenAI evaluation and product-engineering hygiene (tests, CI, coverage, lint, charts).
@@ -36,11 +36,10 @@ pytest
 ```
 
 ## Layout
-- `src/selabs/skills/` — skill CLIs (Typer-friendly shape)
+- `src/selabs/skills/` — CLI tools for running evals
 - `src/selabs/evals/` — eval harness + metrics
-- `data/evals/` — small offline datasets (JSONL)
-- `tests/` — unit tests for metrics and skills
-- `.agents/skills/personal-growth-coach` — a Codex skill with personal memory
+- `data/evals/` — small offline datasets (JSONL) and schemas
+- `tests/` — unit tests for metrics and tools
 
 ## VS Code
 - Python: use `.venv` interpreter
@@ -48,10 +47,9 @@ pytest
 - Format on save: Black
 - Lint on save: Ruff
 
-## Guardrails
-This repo lives under `.../personal/` and uses the `github-roastedhawk` alias. The pre-push hook blocks any work identity/email.
-
-See also: `docs/architecture.md`, `docs/how_we_evaluate.md`.
+## Safety
+- Offline and deterministic; no external calls or secrets.
+- See also: `docs/architecture.md`, `docs/how_we_evaluate.md`.
 
 ## Examples
 

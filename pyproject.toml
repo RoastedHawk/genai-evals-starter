@@ -1,7 +1,7 @@
 [project]
-name = "se-labs-python"
+name = "genai-evals-starter"
 version = "0.1.0"
-description = "Personal SE Labs for GenAI skills and evals"
+description = "Starter kit for GenAI evaluation workflows in Python"
 requires-python = ">=3.11"
 readme = "README.md"
 
