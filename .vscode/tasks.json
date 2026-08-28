@@ -1,0 +1,19 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "pytest",
+      "type": "shell",
+      "command": "pytest -q",
+      "options": { "env": { "PYTHONPATH": "${workspaceFolder}/src" } },
+      "group": { "kind": "test", "isDefault": true }
+    },
+    {
+      "label": "run: regex digits",
+      "type": "shell",
+      "command": "python -m selabs.skills.prompt_eval_runner data/evals/regex_digits.jsonl --metric regex --model echo --output results/evals.jsonl",
+      "options": { "env": { "PYTHONPATH": "${workspaceFolder}/src" } }
+    }
+  ]
+}
+
