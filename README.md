@@ -69,6 +69,16 @@ pytest
 - Offline and deterministic; no external calls or secrets.
 - See also: `docs/architecture.md`, `docs/how_we_evaluate.md`.
 
+## Architecture Diagram
+```mermaid
+flowchart LR
+  A[JSONL dataset] --> B[Model stub]
+  B --> C[Metrics: exact/regex/json/schema/semantic]
+  C --> D[Summary JSON]
+  D --> E[results/evals.jsonl]
+  E --> F[SVG charts]
+```
+
 ## Examples
 
 Run exact match on digits dataset (echo model):
