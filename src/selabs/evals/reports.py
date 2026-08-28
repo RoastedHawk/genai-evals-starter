@@ -52,24 +52,24 @@ def build_svg_line_chart(
         f"<polyline fill='none' stroke='#2c7be5' stroke-width='2' points='{points}' />",
         f"<circle cx='{xs[-1]:.1f}' cy='{ys[-1]:.1f}' r='3' fill='#2c7be5' />",
         f"<text x='{xs[-1]+6:.1f}' y='{ys[-1]-6:.1f}' font-family='Verdana' font-size='10' fill='#2c7be5'>{int(values[-1]*100)}</text>",
-        # Optional latency overlay
-        *(lambda: (
-            (lambda lat_vals: (
-                (lambda mn_mx: (
-                    (lambda mn, mx: (
-                        (lambda norm: (
-                            (lambda ys2: (
-                                (lambda points2: [
-                                    f"<polyline fill='none' stroke='#f6c343' stroke-width='2' points='{points2}' />",
-                                    f"<circle cx='{xs[min(len(xs)-1, len(ys2)-1)]:.1f}' cy='{ys2[-1]:.1f}' r='3' fill='#f6c343' />",
-                                ])
-                            )([m + (plot_h * (1 - v)) for v in norm])
-                        )([0.0 if mx == mn else (v - mn) / (mx - mn) for v in lat_vals])
-                    ))(*mn_mx)
-                ))((min(lat_vals), max(lat_vals)))
-            ))(list(latency_ms)) if latency_ms else []
-        ))(),
-        "</svg>",
+    ]
+
+    # Optional latency overlay
+    if latency_ms:
+        lat_vals = list(latency_ms)
+        if lat_vals:
+            mn, mx = min(lat_vals), max(lat_vals)
+            norm = [0.0 if mx == mn else (v - mn) / (mx - mn) for v in lat_vals]
+            ys2 = [m + (plot_h * (1 - v)) for v in norm]
+            points2 = " ".join(f"{x:.1f},{y:.1f}" for x, y in zip(xs[: len(ys2)], ys2))
+            svg += [
+                f"<polyline fill='none' stroke='#f6c343' stroke-width='2' points='{points2}' />",
+                f"<circle cx='{xs[min(len(xs)-1, len(ys2)-1)]:.1f}' cy='{ys2[-1]:.1f}' r='3' fill='#f6c343' />",
+            ]
+
+    svg.append("</svg>")
+    
+    return "".join(svg)
     ]
     return "".join(svg)
 
