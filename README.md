@@ -10,6 +10,13 @@ A clean personal workspace for building software engineering skills focused on G
 - Offline, deterministic, and safe to share (no secrets, no external calls).
 - Clean, minimal Python that’s easy to review during interviews.
 
+## Case Study (Portfolio)
+- **Problem**: Ensure an assistant follows exact instructions and returns valid, structured outputs (JSON), while providing a simple reliability signal.
+- **Approach**: Curate small JSONL goldens; run an offline model stub; gate with metrics (exact, regex, JSON validity, JSON Schema) and semantic baselines (token F1, cosine).
+- **Metrics**: Exact match for instruction-following; regex for required tokens (e.g., `source:`); JSON + Schema for structure; token F1 and cosine for similarity.
+- **Safety & Tradeoffs**: No secrets; deterministic runs; explicit JSON contracts; CI gates (lint, tests, coverage, typecheck) prevent regressions.
+- **Outcome**: A reproducible eval harness with charts and badges that demonstrates engineering hygiene and product-minded evaluation—ready to extend to real adapters later without changing tests.
+
 ## Goals
 - Practice Python engineering with tests, lint, and CI-ready structure.
 - Build reusable "skills" (CLI tools) with clear contracts.
