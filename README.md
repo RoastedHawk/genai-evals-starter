@@ -5,6 +5,24 @@
 
 Starter kit for building and demonstrating GenAI evaluation workflows in Python.
 
+## 2‑Minute Quickstart
+```bash
+# 1) Create a venv and install dev tools
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements-dev.txt
+
+# 2) Run tests and lint (CI parity)
+pytest -q
+ruff check . && black --check --line-length 100 .
+
+# 3) Run a sample eval and generate the chart
+python -m selabs.skills.prompt_eval_runner data/evals/instruction_following.jsonl \
+  --metric exact --model echo --output results/evals.jsonl
+PYTHONPATH=src python scripts/generate_results_chart.py --input results/evals.jsonl --output docs/results.svg
+```
+
+![Results Chart](docs/results.svg)
+
 ## Why This Repo
 - Demonstrates practical GenAI evaluation and product-engineering hygiene (tests, CI, coverage, lint, charts).
 - Offline, deterministic, and safe to share (no secrets, no external calls).
