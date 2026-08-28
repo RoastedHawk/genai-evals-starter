@@ -13,7 +13,8 @@ def _scale(value: float, in_min: float, in_max: float, out_min: float, out_max: 
 
 
 def build_svg_line_chart(
-    scores: Iterable[float], *, width: int = 640, height: int = 220, margin: int = 30
+    scores: Iterable[float], *, width: int = 640, height: int = 220, margin: int = 30,
+    latency_ms: Iterable[float] | None = None,
 ) -> str:
     values: List[float] = list(scores)
     w, h, m = width, height, margin
@@ -51,6 +52,23 @@ def build_svg_line_chart(
         f"<polyline fill='none' stroke='#2c7be5' stroke-width='2' points='{points}' />",
         f"<circle cx='{xs[-1]:.1f}' cy='{ys[-1]:.1f}' r='3' fill='#2c7be5' />",
         f"<text x='{xs[-1]+6:.1f}' y='{ys[-1]-6:.1f}' font-family='Verdana' font-size='10' fill='#2c7be5'>{int(values[-1]*100)}</text>",
+        # Optional latency overlay
+        *(lambda: (
+            (lambda lat_vals: (
+                (lambda mn_mx: (
+                    (lambda mn, mx: (
+                        (lambda norm: (
+                            (lambda ys2: (
+                                (lambda points2: [
+                                    f"<polyline fill='none' stroke='#f6c343' stroke-width='2' points='{points2}' />",
+                                    f"<circle cx='{xs[min(len(xs)-1, len(ys2)-1)]:.1f}' cy='{ys2[-1]:.1f}' r='3' fill='#f6c343' />",
+                                ])
+                            )([m + (plot_h * (1 - v)) for v in norm])
+                        )([0.0 if mx == mn else (v - mn) / (mx - mn) for v in lat_vals])
+                    ))(*mn_mx)
+                ))((min(lat_vals), max(lat_vals)))
+            ))(list(latency_ms)) if latency_ms else []
+        ))(),
         "</svg>",
     ]
     return "".join(svg)
@@ -58,6 +76,7 @@ def build_svg_line_chart(
 
 def write_results_chart(results_path: Path, out_svg: Path) -> None:
     scores: List[float] = []
+    lats: List[float] = []
     if results_path.exists():
         for line in results_path.read_text().splitlines():
             if not line.strip():
@@ -70,7 +89,9 @@ def write_results_chart(results_path: Path, out_svg: Path) -> None:
             if isinstance(score, (int, float)):
                 # If JSON score is given as percentage, normalize to 0..1; otherwise assume 0..1 already
                 scores.append(score if score <= 1.0 else score / 100.0)
-    svg = build_svg_line_chart(scores)
+            lat = obj.get("latency_ms")
+            if isinstance(lat, (int, float)):
+                lats.append(float(lat))
+    svg = build_svg_line_chart(scores, latency_ms=lats if lats else None)
     out_svg.parent.mkdir(parents=True, exist_ok=True)
     out_svg.write_text(svg)
-

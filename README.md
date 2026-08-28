@@ -32,7 +32,7 @@ PYTHONPATH=src python scripts/generate_results_chart.py --input results/evals.js
 - **Problem**: Ensure an assistant follows exact instructions and returns valid, structured outputs (JSON), while providing a simple reliability signal.
 - **Approach**: Curate small JSONL goldens; run an offline model stub; gate with metrics (exact, regex, JSON validity, JSON Schema) and semantic baselines (token F1, cosine).
 - **Metrics**: Exact match for instruction-following; regex for required tokens (e.g., `source:`); JSON + Schema for structure; token F1 and cosine for similarity.
-- **Safety & Tradeoffs**: No secrets; deterministic runs; explicit JSON contracts; CI gates (lint, tests, coverage, typecheck) prevent regressions.
+- **Safety & Tradeoffs**: No secrets; deterministic runs; explicit JSON contracts; CI gates (lint, tests, coverage, typecheck) prevent regressions. Safety metrics include `citation_presence` and `pii_safe`.
 - **Outcome**: A reproducible eval harness with charts and badges that demonstrates engineering hygiene and product-minded evaluation—ready to extend to real adapters later without changing tests.
 
 ## Goals
@@ -161,4 +161,11 @@ Validate JSON orders against a schema:
 python -m selabs.skills.prompt_eval_runner data/evals/json_order.jsonl \
   --metric json_schema --schema data/evals/schemas/order_schema.json \
   --model echo --output results/evals.jsonl
+```
+
+PII safety check (no email/phone in outputs):
+
+```bash
+python -m selabs.skills.prompt_eval_runner data/evals/pii_redteam.jsonl \
+  --metric pii_safe --model echo --output results/evals.jsonl
 ```
