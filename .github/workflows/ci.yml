@@ -1,9 +1,5 @@
 name: CI
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
 on:
   push:
     branches: [ main ]
@@ -14,109 +10,8 @@ permissions:
   contents: read
 
 jobs:
-  tests:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ['3.11', '3.12']
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-      - uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
-          cache: 'pip'
-      - name: Tool versions
-        run: |
-          python -V
-          pip -V
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install pytest pytest-cov ruff black pre-commit
-      - name: Set PYTHONPATH for src layout
-        run: echo "PYTHONPATH=$PWD/src" >> $GITHUB_ENV
-      - name: Lint (Ruff)
-        run: ruff --version && ruff check . | tee ruff.txt
-      - name: Format check (Black)
-        run: black --version && black --check --line-length 100 . | tee black.txt
-      - name: Pre-commit (report-only)
-        continue-on-error: true
-        run: pre-commit run --all-files | tee precommit.txt
-      - name: Upload lint logs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: lint-logs
-          path: |
-            ruff.txt
-            black.txt
-            precommit.txt
-      - name: Run tests with coverage (XML + JUnit)
-        run: pytest -q --cov=src --cov-report=term-missing --cov-report=xml:coverage.xml --cov-fail-under=80 --junitxml=pytest.xml || true
-      - name: Upload pytest report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: pytest-report-${{ matrix.python-version }}
-          path: pytest.xml
-      - name: Upload coverage xml
-        if: matrix.python-version == '3.12'
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-xml
-          path: coverage.xml
-
-  typecheck:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-          cache: 'pip'
-      - name: Install mypy
-        run: |
-          python -m pip install --upgrade pip
-          pip install mypy
-      - name: Run mypy
-        run: mypy --config-file mypy.ini src
-
-  badge:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: tests
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Download coverage xml
-        uses: actions/download-artifact@v4
-        with:
-          name: coverage-xml
-          path: .
-      - name: Generate coverage badge
-        run: |
-          python -m pip install --quiet coverage-badge
-          mkdir -p docs
-          coverage-badge -o docs/coverage.svg -f coverage.xml || true
-      - name: Generate results chart
-        env:
-          PYTHONPATH: ${{ github.workspace }}/src
-        run: |
-          python scripts/generate_results_chart.py --input results/evals.jsonl --output docs/results.svg || true
-      - name: Commit badge [skip ci]
-        run: |
-          if git diff --quiet -- docs/coverage.svg docs/results.svg; then
-            echo "No docs changes"; exit 0;
-          fi
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-          git add docs/coverage.svg docs/results.svg
-          git commit -m "docs: update coverage badge [skip ci]"
-          git push
+  ci:
+    uses: RoastedHawk/.github/.github/workflows/python-ci.yml@main
+    with:
+      run-matrix: "['3.11','3.12']"
+      cov-threshold: '80'

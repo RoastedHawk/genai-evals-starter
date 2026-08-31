@@ -1,0 +1,30 @@
+name: CodeQL
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  analyze:
+    uses: RoastedHawk/.github/.github/workflows/codeql.yaml@main
+name: CodeQL
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  analyze:
+    uses: RoastedHawk/.github/.github/workflows/codeql.yaml@main
