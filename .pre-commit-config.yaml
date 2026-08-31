@@ -17,3 +17,12 @@ repos:
       - id: check-yaml
       - id: check-json
       - id: detect-private-key
+
+  - repo: local
+    hooks:
+      - id: guard-identity
+        name: guard-identity (verify email/remote)
+        entry: python scripts/guard_identity.py --expect-host github-roastedhawk --expect-email aminebrahime@gmail.com
+        language: system
+        stages: [push]
+      - id: detect-private-key
