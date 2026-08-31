@@ -70,8 +70,6 @@ def build_svg_line_chart(
     svg.append("</svg>")
     
     return "".join(svg)
-    ]
-    return "".join(svg)
 
 
 def write_results_chart(results_path: Path, out_svg: Path) -> None:
