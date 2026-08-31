@@ -168,4 +168,38 @@ PII safety check (no email/phone in outputs):
 ```bash
 python -m selabs.skills.prompt_eval_runner data/evals/pii_redteam.jsonl \
   --metric pii_safe --model echo --output results/evals.jsonl
+
+Contract correctness (schema + simple checks):
+
+```bash
+python - <<'PY'
+import json
+spec = {
+  "schema": {
+    "required": ["action","amount","currency"],
+    "properties": {
+      "action": {"type": "string"},
+      "amount": {"type": "number"},
+      "currency": {"type": "string"}
+    }
+  },
+  "checks": [
+    {"field": "action", "equals": "transfer"},
+    {"field": "currency", "in": ["USD","EUR"]},
+    {"field": "amount", "gte": 0}
+  ]
+}
+print(json.dumps(spec))
+PY
+
+# Use the printed JSON as the gold argument when invoking the metric directly in code,
+# or wire into your runner as a custom metric.
+```
+
+Citations‑or‑silence guard skill:
+
+```bash
+python -m selabs.skills.citations_or_silence data/evals/citation_required.jsonl \
+  --output results/guarded.jsonl
+```
 ```
