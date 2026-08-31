@@ -190,3 +190,75 @@ REGISTRY.update({
     "citation_presence": citation_presence,
     "pii_safe": pii_safe,
 })
+
+# --- Contract correctness metric ---
+
+def contract_check(pred: str, gold: str) -> float:
+    """Validate a JSON contract with schema and simple field checks.
+
+    gold: JSON string specifying a spec like:
+      {
+        "schema": {"required": [...], "properties": {"field": {"type": "string"}, ...}},
+        "checks": [
+          {"field": "action", "equals": "transfer"},
+          {"field": "currency", "in": ["USD","EUR"]},
+          {"field": "amount", "gte": 0}
+        ]
+      }
+    Returns 1.0 if pred parses as JSON, satisfies the schema and all checks; else 0.0.
+    """
+    try:
+        spec = json.loads(gold) if gold else {}
+    except Exception:
+        return 0.0
+
+    schema = spec.get("schema")
+    checks = spec.get("checks", [])
+
+    # Parse prediction JSON
+    try:
+        obj = json.loads(pred)
+    except Exception:
+        return 0.0
+
+    # Schema validation using existing helper
+    if isinstance(schema, dict):
+        schema_metric = make_json_schema_metric(schema)
+        if schema_metric(pred, "") != 1.0:  # type: ignore[arg-type]
+            return 0.0
+
+    # Simple checks
+    for chk in checks:
+        field = chk.get("field")
+        if not field:
+            return 0.0
+        val = obj.get(field)
+        if "equals" in chk and val != chk["equals"]:
+            return 0.0
+        if "regex" in chk:
+            try:
+                if not isinstance(val, str) or not re.fullmatch(chk["regex"], val):
+                    return 0.0
+            except re.error:
+                return 0.0
+        if "in" in chk:
+            options = chk["in"]
+            if not isinstance(options, list) or val not in options:
+                return 0.0
+        if "gte" in chk:
+            try:
+                if not (isinstance(val, (int, float)) and val >= float(chk["gte"])):
+                    return 0.0
+            except Exception:
+                return 0.0
+        if "lte" in chk:
+            try:
+                if not (isinstance(val, (int, float)) and val <= float(chk["lte"])):
+                    return 0.0
+            except Exception:
+                return 0.0
+    return 1.0
+
+REGISTRY.update({
+    "contract_check": contract_check,
+})
