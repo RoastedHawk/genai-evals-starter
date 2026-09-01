@@ -15,3 +15,21 @@ jobs:
     with:
       run-matrix: "['3.11','3.12']"
       cov-threshold: '90'
+  sbom:
+    needs: ci
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Generate dependency snapshot
+        run: |
+          python -m pip list --format=json > docs/sbom_pip.json
+      - name: Upload SBOM (pip list)
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-pip
+          path: docs/sbom_pip.json

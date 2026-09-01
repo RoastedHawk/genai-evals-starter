@@ -53,6 +53,21 @@ pip install -r requirements.txt  # optional if you add deps
 pytest
 ```
 
+### Installable CLI (optional)
+
+You can install the CLI locally for quick runs:
+
+```bash
+pip install .
+selabs eval-run data/evals/instruction_following.jsonl --metric exact --model echo --output results/evals.jsonl
+```
+
+Or with pipx:
+
+```bash
+pipx install .
+```
+
 ## Layout
 - `src/selabs/skills/` — CLI tools for running evals
 - `src/selabs/evals/` — eval harness + metrics

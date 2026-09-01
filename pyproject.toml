@@ -5,6 +5,19 @@ description = "Starter kit for GenAI evaluation workflows in Python"
 requires-python = ">=3.11"
 readme = "README.md"
 
+[project.scripts]
+selabs = "selabs.cli:main"
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
 [tool.pytest.ini_options]
 addopts = "-q"
 testpaths = ["tests"]
