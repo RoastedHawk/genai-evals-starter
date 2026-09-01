@@ -14,4 +14,4 @@ jobs:
     uses: RoastedHawk/.github/.github/workflows/python-ci.yml@main
     with:
       run-matrix: "['3.11','3.12']"
-      cov-threshold: '80'
+      cov-threshold: '90'

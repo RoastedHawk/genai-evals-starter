@@ -191,6 +191,87 @@ REGISTRY.update({
     "pii_safe": pii_safe,
 })
 
+# --- BLEU and ROUGE-L (offline baselines) ---
+
+def _ngrams(tokens: list[str], n: int) -> list[tuple[str, ...]]:
+    return [tuple(tokens[i : i + n]) for i in range(max(0, len(tokens) - n + 1))]
+
+
+def bleu(pred: str, gold: str, max_n: int = 4) -> float:
+    """Compute a simple BLEU score (up to 4-gram) with brevity penalty.
+    Offline and dependency-free; tokens split on whitespace.
+    """
+    p_toks = _tokens(pred)
+    g_toks = _tokens(gold)
+    if not p_toks and not g_toks:
+        return 1.0
+    if not p_toks or not g_toks:
+        return 0.0
+
+    precisions: list[float] = []
+    for n in range(1, max_n + 1):
+        p_ngr = _ngrams(p_toks, n)
+        g_ngr = _ngrams(g_toks, n)
+        if not p_ngr or not g_ngr:
+            precisions.append(0.0)
+            continue
+        g_counts: dict[tuple[str, ...], int] = {}
+        for ng in g_ngr:
+            g_counts[ng] = g_counts.get(ng, 0) + 1
+        match = 0
+        used: dict[tuple[str, ...], int] = {}
+        for ng in p_ngr:
+            c = g_counts.get(ng, 0)
+            if c > used.get(ng, 0):
+                match += 1
+                used[ng] = used.get(ng, 0) + 1
+        precisions.append(match / len(p_ngr))
+
+    # geometric mean of precisions (avoid log(0))
+    import math
+
+    eps = 1e-9
+    log_sum = sum(math.log(p + eps) for p in precisions) / max_n
+    geo = math.exp(log_sum)
+
+    # brevity penalty
+    bp = 1.0 if len(p_toks) > len(g_toks) else math.exp(1 - len(g_toks) / max(1, len(p_toks)))
+    score = bp * geo
+    return max(0.0, min(1.0, score))
+
+
+def rouge_l(pred: str, gold: str) -> float:
+    """Compute ROUGE-L (LCS-based F1) offline.
+    Returns value in [0,1].
+    """
+    p = _tokens(pred)
+    g = _tokens(gold)
+    if not p and not g:
+        return 1.0
+    if not p or not g:
+        return 0.0
+    # LCS length
+    m, n = len(p), len(g)
+    dp = [[0] * (n + 1) for _ in range(m + 1)]
+    for i in range(m):
+        for j in range(n):
+            if p[i] == g[j]:
+                dp[i + 1][j + 1] = dp[i][j] + 1
+            else:
+                dp[i + 1][j + 1] = max(dp[i][j + 1], dp[i + 1][j])
+    lcs = dp[m][n]
+    if lcs == 0:
+        return 0.0
+    prec = lcs / m
+    rec = lcs / n
+    f1 = (2 * prec * rec) / (prec + rec)
+    return max(0.0, min(1.0, f1))
+
+REGISTRY.update({
+    "bleu": bleu,
+    "rouge_l": rouge_l,
+})
+
 # --- Contract correctness metric ---
 
 def contract_check(pred: str, gold: str) -> float:
