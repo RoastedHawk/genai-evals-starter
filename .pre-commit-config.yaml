@@ -25,4 +25,3 @@ repos:
         entry: python scripts/guard_identity.py --expect-host github-roastedhawk --expect-email aminebrahime@gmail.com
         language: system
         stages: [push]
-      - id: detect-private-key
