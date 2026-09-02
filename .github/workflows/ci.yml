@@ -15,6 +15,36 @@ jobs:
     with:
       run-matrix: "['3.11','3.12']"
       cov-threshold: '90'
+  results-chart:
+    needs: ci
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Generate results chart
+        env:
+          PYTHONPATH: ${{ github.workspace }}/src
+        run: |
+          python scripts/generate_results_chart.py --input results/evals.jsonl --output docs/results.svg || true
+      - name: Commit results chart [skip ci]
+        run: |
+          if git diff --quiet -- docs/results.svg; then
+            echo "No chart changes"; exit 0;
+          fi
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add docs/results.svg
+          git commit -m "docs: update results chart [skip ci]"
+          git push
+  gitleaks:
+    needs: ci
+    uses: RoastedHawk/.github/.github/workflows/gitleaks.yaml@main
   sbom:
     needs: ci
     runs-on: ubuntu-latest
