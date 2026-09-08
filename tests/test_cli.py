@@ -14,4 +14,5 @@ def test_cli_eval_run_echo(tmp_path: Path):
     assert rc == 0
     assert out.exists()
     text = out.read_text().strip().splitlines()[-1]
-    assert n in text and score in text
+    obj = json.loads(text)
+    assert "n" in obj and "score" in obj
